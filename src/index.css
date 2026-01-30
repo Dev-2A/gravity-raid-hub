@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 커스텀 테마 변수 - FF14 / 과중력 컨셉 */
+:root {
+  --color-primary: #7c3aed;      /* 보라색 - 중력/공간 느낌 */
+  --color-secondary: #3b82f6;    /* 파란색 */
+  --color-accent: #f59e0b;       /* 골드 - FF14 UI 느낌 */
+  --color-danger: #ef4444;       /* 빨간색 */
+  --color-success: #10b981;      /* 녹색 */
+  --color-background: #0f0f1a;   /* 어두운 배경 */
+  --color-surface: #1a1a2e;      /* 카드 배경 */
+  --color-text: #e2e8f0;         /* 기본 텍스트 */
+  --color-text-muted: #94a3b8;   /* 흐린 텍스트 */
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
