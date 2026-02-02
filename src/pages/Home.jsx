@@ -16,8 +16,8 @@ export default function Home() {
       // 현재 토토 라운드
       const { data: totoData } = await supabase
         .from('toto_rounds')
-        .select('*, bets:toto_bets(count)')
-        .in('status', ['open', 'closed'])
+        .select('*, bets:toto_bets(*)')
+        .in('status', ['open', 'closed', 'finished'])
         .order('created_at', { ascending: false })
         .limit(1)
         .single()
@@ -27,7 +27,7 @@ export default function Home() {
       // 현재 시상식
       const { data: awardData } = await supabase
         .from('award_sessions')
-        .select('*, votes:award_votes(count)')
+        .select('*, votes:award_votes(*)')
         .eq('status', 'voting')
         .order('created_at', { ascending: false })
         .limit(1)
@@ -139,7 +139,7 @@ export default function Home() {
             {currentToto ? (
               currentToto.status === 'open' ? (
                 <span className="text-[var(--color-success)]">
-                  🟢 {getTimeRemaining(currentToto.deadline)} • {currentToto.bets?.[0]?.count || 0}명 참여
+                  🟢 {getTimeRemaining(currentToto.deadline)} • {currentToto.bets?.length || 0}명 참여
                 </span>
               ) : (
                 <span className="text-[var(--color-accent)]">🟡 결과 대기 중</span>
@@ -169,7 +169,7 @@ export default function Home() {
           <div className="text-[var(--color-text-muted)] text-sm">
             {currentAward ? (
               <span className="text-[var(--color-success)]">
-                🟢 투표 진행 중 • {currentAward.votes?.[0]?.count || 0}표
+                🟢 투표 진행 중 • {currentAward.votes?.length || 0}표
               </span>
             ) : (
               <span>진행 중인 투표 없음</span>

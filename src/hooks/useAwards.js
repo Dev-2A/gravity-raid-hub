@@ -128,6 +128,8 @@ export function useAwards() {
     const results = {}
 
     votes.forEach((vote) => {
+      if (!vote.category || !vote.nominee_id || !vote.nominee) return
+
       if (!results[vote.category]) {
         results[vote.category] = {}
       }
@@ -135,10 +137,10 @@ export function useAwards() {
       if (!results[vote.category][nomineeId]) {
         results[vote.category][nomineeId] = {
           nominee: vote.nominee,
-          cound: 0
+          count: 0
         }
       }
-      results[vote.category][nomineeId].count++
+      results[vote.category][nomineeId].count += 1
     })
 
     // 각 카테고리별 정렬
