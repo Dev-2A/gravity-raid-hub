@@ -141,8 +141,10 @@ export default function Home() {
                 <span className="text-[var(--color-success)]">
                   🟢 {getTimeRemaining(currentToto.deadline)} • {currentToto.bets?.length || 0}명 참여
                 </span>
-              ) : (
+              ) : currentToto.status === 'closed' ? (
                 <span className="text-[var(--color-accent)]">🟡 결과 대기 중</span>
+              ) : (
+                <span className="text-[var(--color-success)]">✅ 결과 발표 완료</span>
               )
             ) : (
               <span>진행 중인 토토 없음</span>
