@@ -14,7 +14,7 @@ export function useToto() {
       const { data, error } = await supabase
         .from('toto_rounds')
         .select('*')
-        .in('status', ['open', 'closed'])
+        .in('status', ['open', 'closed', 'finished'])
         .order('created_at', { ascending: false })
         .limit(1)
         .single()
