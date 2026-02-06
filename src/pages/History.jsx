@@ -1,12 +1,21 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { WEAPONS, AWARD_CATEGORIES } from '../lib/constants'
+import { WEAPONS, AWARD_CATEGORIES, TOTO_TYPES } from '../lib/constants'
 
 export default function History() {
   const [activeTab, setActiveTab] = useState('toto')
   const [totoHistory, setTotoHistory] = useState([])
   const [awardHistory, setAwardHistory] = useState([])
+  const [members, setMembers] = useState([])
   const [loading, setLoading] = useState(true)
+
+  // 멤버 목록 불러오기 (사망자 토토 표시용)
+  const fetchMembers = async () => {
+    const { data } = await supabase
+      .from('members')
+      .select('*')
+    return data || []
+  }
 
   // 토토 기록 불러오기
   const fetchTotoHistory = async () => {
@@ -46,6 +55,8 @@ export default function History() {
   useEffect(() => {
     const fetchAll = async () => {
       setLoading(true)
+      const membersData = await fetchMembers()
+      setMembers(membersData)
       await Promise.all([fetchTotoHistory(), fetchAwardHistory()])
       setLoading(false)
     }
@@ -56,6 +67,47 @@ export default function History() {
   const getWeaponName = (weaponId) => {
     const weapon = WEAPONS.find((w) => w.id === weaponId)
     return weapon ? `${weapon.name} (${weapon.job})` : weaponId
+  }
+
+  // 멤버 이름 찾기
+  const getMemberName = (memberId) => {
+    const member = members.find((m) => m.id === memberId)
+    return member ? member.name : memberId
+  }
+
+  // 토토 유형 정보
+  const getTotoType = (round) => {
+    return TOTO_TYPES.find((t) => t.id === round.toto_type) || TOTO_TYPES[0]
+  }
+
+  // 베팅값 표시
+  const displayBetValue = (bet, round) => {
+    const value = bet.bet_value || bet.weapon
+    const type = round.toto_type || 'weapon'
+
+    if (type === 'weapon') return getWeaponName(value)
+    if (type === 'first_death' || type === 'last_death') return getMemberName(value)
+    if (type === 'wipe_count' || type === 'total_deaths') return `${value}회`
+    return value
+  }
+
+  // 결과값 표시
+  const displayResult = (round) => {
+    const result = round.actual_result || round.actual_weapon
+    if (!result) return '-'
+
+    if (round.toto_type === 'weapon') return getWeaponName(result)
+    if (round.toto_type === 'first_death' || round.toto_type === 'last_death') return getMemberName(result)
+    if (round.toto_type === 'wipe_count') return `${result}회`
+    if (round.toto_type === 'total_deaths') return `${result}회`
+    return result
+  }
+
+  // 정답 확인
+  const isCorrect = (bet, round) => {
+    const result = round.actual_result || round.actual_weapon
+    const value = bet.bet_value || bet.weapon
+    return String(value) === String(result)
   }
 
   // 시상식 결과 집계
@@ -76,7 +128,6 @@ export default function History() {
       results[vote.category][nomineeId].count++
     })
 
-    // 각 카테고리별 1등만 추출
     const winners = {}
     Object.entries(results).forEach(([category, nominees]) => {
       const sorted = Object.values(nominees).sort((a, b) => b.count - a.count)
@@ -132,38 +183,52 @@ export default function History() {
         <div className="space-y-4">
           {totoHistory.length > 0 ? (
             totoHistory.map((round) => {
-              const winners = round.bets.filter((b) => b.weapon === round.actual_weapon)
+              const type = getTotoType(round)
+              const result = round.actual_result || round.actual_weapon
+              const winners = round.bets.filter((b) => isCorrect(b, round))
+              const floorText = round.floor ? `${round.floor}층 ` : ''
+
               return (
                 <div
                   key={round.id}
                   className="bg-[var(--color-surface)] rounded-xl p-6 border border-white/10"
                 >
-                  <div className="flex justify-between items-center mb-4">
+                  <div className="flex justify-between items-center mb-2">
                     <h3 className="font-bold">
-                      {new Date(round.week_start).toLocaleDateString('ko-KR')} 주차
+                      {new Date(round.week_start).toLocaleDateString('ko-KR')}
                     </h3>
                     <span className="text-[var(--color-accent)]">
-                      {getWeaponName(round.actual_weapon)}
+                      {displayResult(round)}
                     </span>
                   </div>
-                  
+
+                  {/* 토토 유형 배지 */}
+                  <div className="mb-4">
+                    <span className="inline-block px-3 py-1 rounded-full text-xs bg-[var(--color-primary)]/20 text-[var(--color-primary)]">
+                      {type.emoji} {floorText}{type.name}
+                    </span>
+                  </div>
+
                   <div className="grid gap-2">
-                    {round.bets.map((bet) => (
-                      <div
-                        key={bet.id}
-                        className={`flex justify-between items-center p-2 rounded-lg ${
-                          bet.weapon === round.actual_weapon
-                            ? 'bg-[var(--color-success)]/20'
-                            : 'bg-black/20'
-                        }`}
-                      >
-                        <span>{bet.member?.name}</span>
-                        <span className="text-[var(--color-text-muted)]">
-                          {getWeaponName(bet.weapon)}
-                          {bet.weapon === round.actual_weapon && ' ✅'}
-                        </span>
-                      </div>
-                    ))}
+                    {round.bets.map((bet) => {
+                      const correct = isCorrect(bet, round)
+                      return (
+                        <div
+                          key={bet.id}
+                          className={`flex justify-between items-center p-2 rounded-lg ${
+                            correct
+                              ? 'bg-[var(--color-success)]/20'
+                              : 'bg-black/20'
+                          }`}
+                        >
+                          <span>{bet.member?.name}</span>
+                          <span className="text-[var(--color-text-muted)]">
+                            {displayBetValue(bet, round)}
+                            {correct && ' ✅'}
+                          </span>
+                        </div>
+                      )
+                    })}
                   </div>
 
                   {winners.length > 0 && (
@@ -200,7 +265,7 @@ export default function History() {
                   <h3 className="font-bold mb-4">
                     {new Date(session.raid_date).toLocaleDateString('ko-KR')} 레이드
                   </h3>
-                  
+
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {AWARD_CATEGORIES.map((cat) => {
                       const winner = winners[cat.id]
