@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useMembers } from "../hooks/useMembers";
 import { useAwards } from "../hooks/useAwards";
-import { AWARD_CATEGORIES } from "../lib/constants";
+import { useAchievements } from "../hooks/useAchievements";
+import { AWARD_CATEGORIES, ACHIEVEMENTS } from "../lib/constants";
 
 export default function Awards() {
   const { members } = useMembers();
@@ -14,7 +15,9 @@ export default function Awards() {
     finishSession,
     getResults,
   } = useAwards();
+  const { checkAwardAchievements } = useAchievements();
 
+  const [newAchievementAlert, setNewAchievementAlert] = useState(null);
   const [selectedVoter, setSelectedVoter] = useState("");
   const [selectedVotes, setSelectedVotes] = useState({});
   const [comments, setComments] = useState({});
@@ -72,11 +75,37 @@ export default function Awards() {
 
   // 투표 종료
   const handleFinish = async () => {
+    if (!confirm("시상식을 마감하시겠습니까?")) return;
     const { error } = await finishSession();
     if (error) {
-      alert("종료 실패: " + error);
-    } else {
-      alert("시상식이 종료되었습니다!");
+      alert("마감 실패: " + error);
+      return;
+    }
+
+    // 업적 체크: 모든 멤버 확인
+    try {
+      const newAchievements = [];
+      for (const member of members) {
+        const achieved = await checkAwardAchievements(member.id);
+        if (achieved.length > 0) {
+          newAchievements.push({
+            memberName: member.name,
+            achievements: achieved,
+          });
+        }
+      }
+      if (newAchievements.length > 0) {
+        const messages = newAchievements.map((na) => {
+          const achNames = na.achievements.map((key) => {
+            const info = ACHIEVEMENTS.find((a) => a.key === key);
+            return info ? `${info.emoji} ${info.name}` : key;
+          });
+          return `${na.memberName}: ${achNames.join(", ")}`;
+        });
+        setNewAchievementAlert(messages);
+      }
+    } catch (e) {
+      console.error("업적 체크 실패:", e);
     }
   };
 
@@ -116,6 +145,29 @@ export default function Awards() {
 
   return (
     <div className="space-y-6">
+      {/* 업적 달성 알림 */}
+      {newAchievementAlert && (
+        <div className="bg-[var(--color-accent)]/20 border border-[var(--color-accent)] rounded-xl p-4">
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="font-bold text-[var(--color-accent)] mb-2">
+                🎉 새 업적 달성!
+              </h3>
+              {newAchievementAlert.map((msg, idx) => (
+                <p key={idx} className="text-sm">
+                  {msg}
+                </p>
+              ))}
+            </div>
+            <button
+              onClick={() => setNewAchievementAlert(null)}
+              className="text-[var(--color-text-muted)] hover:text-white"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <span>🏆</span> 공대 시상식
