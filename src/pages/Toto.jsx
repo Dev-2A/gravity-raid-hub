@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMembers } from "../hooks/useMembers";
 import { useToto } from "../hooks/useToto";
-import { useAchievements } from "../hooks/useToto";
+import { useAchievements } from "../hooks/useAchievements";
 import {
   WEAPONS,
   ROLE_NAMES,
