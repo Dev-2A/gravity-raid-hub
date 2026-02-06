@@ -1,9 +1,10 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Layout from './components/Layout'
-import Home from './pages/Home'
-import Toto from './pages/Toto'
-import Awards from './pages/Awards'
-import History from './pages/History'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
+import Home from "./pages/Home";
+import Toto from "./pages/Toto";
+import Awards from "./pages/Awards";
+import History from "./pages/History";
+import HallOfFame from "./pages/HallOfFame";
 
 function App() {
   return (
@@ -13,11 +14,12 @@ function App() {
           <Route index element={<Home />} />
           <Route path="toto" element={<Toto />} />
           <Route path="awards" element={<Awards />} />
+          <Route path="hall" element={<HallOfFame />} />
           <Route path="history" element={<History />} />
         </Route>
       </Routes>
     </BrowserRouter>
-  )
+  );
 }
 
-export default App
+export default App;

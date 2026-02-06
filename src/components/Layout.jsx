@@ -1,14 +1,15 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 
 const navItems = [
-  { path: '/', label: '홈', icon: '🏠' },
-  { path: '/toto', label: '토토', icon: '🎰' },
-  { path: '/awards', label: '시상식', icon: '🏆' },
-  { path: '/history', label: '기록실', icon: '📜' },
-]
+  { path: "/", label: "홈", icon: "🏠" },
+  { path: "/toto", label: "토토", icon: "🎰" },
+  { path: "/awards", label: "시상식", icon: "🏆" },
+  { path: "/hall", label: "전당", icon: "👑" },
+  { path: "/history", label: "기록실", icon: "📜" },
+];
 
 export default function Layout() {
-  const location = useLocation()
+  const location = useLocation();
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -26,21 +27,22 @@ export default function Layout() {
             {/* 네비게이션 */}
             <nav className="flex gap-1">
               {navItems.map((item) => {
-                const isActive = location.pathname === item.path
+                const isActive = location.pathname === item.path;
                 return (
                   <Link
                     key={item.path}
                     to={item.path}
                     className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2
-                      ${isActive
-                        ? 'bg-[var(--color-primary)] text-white'
-                        : 'hover:bg-white/10 text-[var(--color-text-muted)]'
+                      ${
+                        isActive
+                          ? "bg-[var(--color-primary)] text-white"
+                          : "hover:bg-white/10 text-[var(--color-text-muted)]"
                       }`}
                   >
                     <span>{item.icon}</span>
                     <span className="hidden sm:inline">{item.label}</span>
                   </Link>
-                )
+                );
               })}
             </nav>
           </div>
@@ -59,5 +61,5 @@ export default function Layout() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
