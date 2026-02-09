@@ -5,6 +5,7 @@ import Toto from "./pages/Toto";
 import Awards from "./pages/Awards";
 import History from "./pages/History";
 import HallOfFame from "./pages/HallOfFame";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="toto" element={<Toto />} />
           <Route path="awards" element={<Awards />} />
           <Route path="hall" element={<HallOfFame />} />
+          <Route path="profile" element={<Profile />} />
           <Route path="history" element={<History />} />
         </Route>
       </Routes>

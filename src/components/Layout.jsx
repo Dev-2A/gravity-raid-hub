@@ -1,12 +1,13 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 
 const navItems = [
-  { path: "/", label: "홈", icon: "🏠" },
-  { path: "/toto", label: "토토", icon: "🎰" },
-  { path: "/awards", label: "시상식", icon: "🏆" },
-  { path: "/hall", label: "전당", icon: "👑" },
-  { path: "/history", label: "기록실", icon: "📜" },
-];
+  { path: '/', label: '홈', icon: '🏠' },
+  { path: '/toto', label: '토토', icon: '🎰' },
+  { path: '/awards', label: '시상식', icon: '🏆' },
+  { path: '/hall', label: '전당', icon: '👑' },
+  { path: '/profile', label: '통계', icon: '📊' },
+  { path: '/history', label: '기록실', icon: '📜' },
+]
 
 export default function Layout() {
   const location = useLocation();
