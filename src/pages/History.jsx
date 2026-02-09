@@ -103,10 +103,37 @@ export default function History() {
     return result
   }
 
+  // 숫자 토토 근접치 우승자 계산
+  const getNumberWinners = (allBets, actualResult) => {
+    const actual = Number(actualResult)
+    if (isNaN(actual) || allBets.length === 0) return []
+
+    const betDiffs = allBets.map((bet) => {
+      const betNum = Number(bet.bet_value || bet.weapon || 0)
+      return { memberId: bet.member_id, betNum, diff: Math.abs(betNum - actual) }
+    })
+
+    const minDiff = Math.min(...betDiffs.map((b) => b.diff))
+    const closest = betDiffs.filter((b) => b.diff === minDiff)
+
+    if (closest.length > 1) {
+      const lowerGuesses = closest.filter((b) => b.betNum <= actual)
+      if (lowerGuesses.length > 0) return lowerGuesses.map((b) => b.memberId)
+    }
+
+    return closest.map((b) => b.memberId)
+  }
+
   // 정답 확인
-  const isCorrect = (bet, round) => {
+  const isCorrect = (bet, round, allBets = []) => {
     const result = round.actual_result || round.actual_weapon
     const value = bet.bet_value || bet.weapon
+
+    if (round.toto_type === 'wipe_count' || round.toto_type === 'total_deaths') {
+      const winners = getNumberWinners(allBets, result)
+      return winners.includes(bet.member_id)
+    }
+
     return String(value) === String(result)
   }
 
@@ -185,7 +212,7 @@ export default function History() {
             totoHistory.map((round) => {
               const type = getTotoType(round)
               const result = round.actual_result || round.actual_weapon
-              const winners = round.bets.filter((b) => isCorrect(b, round))
+              const winners = round.bets.filter((b) => isCorrect(b, round, round.bets))
               const floorText = round.floor ? `${round.floor}층 ` : ''
 
               return (
@@ -211,7 +238,7 @@ export default function History() {
 
                   <div className="grid gap-2">
                     {round.bets.map((bet) => {
-                      const correct = isCorrect(bet, round)
+                      const correct = isCorrect(bet, round, round.bets)
                       return (
                         <div
                           key={bet.id}

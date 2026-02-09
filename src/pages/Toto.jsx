@@ -542,7 +542,7 @@ export default function Toto() {
                 {bets.map((bet) => {
                   const correct =
                     selectedRound.status === "finished" &&
-                    isCorrect(bet, selectedRound);
+                    isCorrect(bet, selectedRound, bets);
                   return (
                     <div
                       key={bet.id}
@@ -557,6 +557,18 @@ export default function Toto() {
                       <span className="font-medium">{bet.member?.name}</span>
                       <span className="text-[var(--color-text-muted)]">
                         {displayBetValue(bet, selectedRound)}
+                        {selectedRound.status === "finished" &&
+                          (selectedRound.toto_type === "wipe_count" ||
+                            selectedRound.toto_type === "total_deaths") && (
+                            <span className="text-xs ml-1">
+                              (차이:{" "}
+                              {Math.abs(
+                                Number(bet.bet_value || 0) -
+                                  Number(selectedRound.actual_result || 0),
+                              )}
+                              )
+                            </span>
+                          )}
                         {correct && <span className="ml-2">✅</span>}
                       </span>
                     </div>

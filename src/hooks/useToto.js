@@ -205,20 +205,53 @@ export function useToto() {
     }
   };
 
-  // 베팅값이 정답인지 확인 (유형별)
-  const isCorrect = (bet, round) => {
-    if (!round?.actual_result && !round?.actual_weapon) return false;
-    const result = round.actual_result || round.actual_weapon;
-    const value = bet.bet_value || bet.weapon;
+  // 숫자 토토 근접치 우승자 계산
+  const getNumberWinners = (allBets, actualResult) => {
+    const actual = Number(actualResult);
+    if (isNaN(actual) || allBets.length === 0) return [];
 
+    // 각 베팅의 차이값 계산
+    const betDiffs = allBets.map((bet) => {
+      const betNum = Number(bet.bet_value || bet.weapon || 0);
+      return {
+        memberId: bet.member_id,
+        betNum,
+        diff: Math.abs(betNum - actual),
+      };
+    });
+
+    // 최소 차이값
+    const minDiff = Math.min(...betDiffs.map((b) => b.diff));
+    const closest = betDiffs.filter((b) => b.diff === minDiff);
+
+    // 동률이면 실제보다 적게 쓴 사람 우선
+    if (closest.length > 1) {
+      const lowerGuesses = closest.filter((b) => b.betNum <= actual);
+      if (lowerGuesses.length > 0) {
+        return lowerGuesses.map((b) => b.memberId);
+      }
+    }
+
+    // 그것마저 같으면 공동 우승
+    return closest.map((b) => b.memberId);
+  };
+
+  // 정답 확인
+  const isCorrect = (bet, round, allBets = []) => {
+    const betVal = String(bet.bet_value || bet.weapon || "");
+    const actualVal = String(round.actual_result || round.actual_weapon || "");
+
+    // 숫자 토토: 근접치 판정
     if (
       round.toto_type === "wipe_count" ||
       round.toto_type === "total_deaths"
     ) {
-      return String(value) === String(result);
+      const winners = getNumberWinners(allBets, actualVal);
+      return winners.includes(bet.member_id);
     }
 
-    return value === result;
+    // 나머지: 정확히 일치
+    return betVal.toLowerCase() === actualVal.toLowerCase();
   };
 
   useEffect(() => {
